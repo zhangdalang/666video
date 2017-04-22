@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd
+       http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 缓存管理器 -->
+    <bean id="cacheManager" class="com.cts.localtour.shiro.CacheManager">
+        <property name="cacheManager" ref="springCacheManager"/>
+    </bean>
+    <!-- spring cache -->
+    <bean id="springCacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
+        <property name="cacheManager" ref="ehcacheManager"/>
+    </bean>
+    <!--ehcache-->
+    <bean id="ehcacheManager" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean">
+        <property name="configLocation" value="/WEB-INF/shiro/ehcache.xml"/>
+    </bean>
+    
+    <!-- 凭证匹配器 -->
+    <!-- <bean id="credentialsMatcher" class="com.github.zhangkaitao.shiro.chapter16.credentials.RetryLimitHashedCredentialsMatcher">
+        <constructor-arg ref="cacheManager"/>
+        <property name="hashAlgorithmName" value="md5"/>
+        <property name="hashIterations" value="2"/>
+        <property name="storedCredentialsHexEncoded" value="true"/>
+    </bean> -->
+
+    <!-- Realm实现 -->
+    <bean id="localTourRealm" class="com.cts.localtour.shiro.localTourRealm">
+        <!-- <property name="credentialsMatcher" ref="credentialsMatcher"/> -->
+        <property name="cachingEnabled" value="false"/>
+        <!-- 身份缓存 -->
+        <!--<property name="authenticationCachingEnabled" value="true"/>-->
+        <!--<property name="authenticationCacheName" value="authenticationCache"/>-->
+        <!-- 权限缓存 -->
+        <property name="authorizationCachingEnabled" value="true"/>
+        <property name="authorizationCacheName" value="authorizationCache"/>
+    </bean>
+
+    <!-- 会话ID生成器 -->
+    <!-- <bean id="sessionIdGenerator" class="org.apache.shiro.session.mgt.eis.JavaUuidSessionIdGenerator"/> -->
+
+    <!-- 会话Cookie模板 -->
+    <!-- <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="sid"/>
+        <property name="httpOnly" value="true"/>
+        <property name="maxAge" value="-1"/>
+    </bean> -->
+
+   <!--  <bean id="rememberMeCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="rememberMe"/>
+        <property name="httpOnly" value="true"/>
+        <property name="maxAge" value="2592000"/>30天
+    </bean>
+
+    rememberMe管理器
+    <bean id="rememberMeManager" class="org.apache.shiro.web.mgt.CookieRememberMeManager">
+        rememberMe cookie加密的密钥 建议每个项目都不一样 默认AES算法 密钥长度（128 256 512 位）
+        <property name="cipherKey"
+                  value="#{T(org.apache.shiro.codec.Base64).decode('4AvVhmFLUs0KTA3Kprsdag==')}"/>
+        <property name="cookie" ref="rememberMeCookie"/>
+    </bean> -->
+
+    <!-- 会话DAO -->
+    <!-- <bean id="sessionDAO" class="org.apache.shiro.session.mgt.eis.EnterpriseCacheSessionDAO">
+        <property name="activeSessionsCacheName" value="shiro-activeSessionCache"/>
+        <property name="sessionIdGenerator" ref="sessionIdGenerator"/>
+    </bean> -->
+
+    <!-- 会话验证调度器 -->
+    <!-- <bean id="sessionValidationScheduler" class="org.apache.shiro.session.mgt.quartz.QuartzSessionValidationScheduler">
+        <property name="sessionValidationInterval" value="1800000"/>
+        <property name="sessionManager" ref="sessionManager"/>
+    </bean> -->
+
+    <!-- 会话管理器 -->
+    <!-- <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <property name="globalSessionTimeout" value="1800000"/>
+        <property name="deleteInvalidSessions" value="true"/>
+        <property name="sessionValidationSchedulerEnabled" value="true"/>
+        <property name="sessionValidationScheduler" ref="sessionValidationScheduler"/>
+        <property name="sessionDAO" ref="sessionDAO"/>
+        <property name="sessionIdCookieEnabled" value="true"/>
+        <property name="sessionIdCookie" ref="sessionIdCookie"/>
+    </bean> -->
+
+    <!-- 安全管理器 -->
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="localTourRealm"/>
+        <!-- <property name="sessionManager" ref="sessionManager"/> -->
+       	<property name="cacheManager" ref="cacheManager"/>
+        <!-- <property name="rememberMeManager" ref="rememberMeManager"/> -->
+    </bean>
+
+    <!-- 相当于调用SecurityUtils.setSecurityManager(securityManager) -->
+    <bean class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+        <property name="staticMethod" value="org.apache.shiro.SecurityUtils.setSecurityManager"/>
+        <property name="arguments" ref="securityManager"/>
+    </bean>
+
+    <!-- 基于Form表单的身份验证过滤器 -->
+    <!-- <bean id="formAuthenticationFilter" class="org.apache.shiro.web.filter.authc.FormAuthenticationFilter">
+        <property name="usernameParam" value="username"/>
+        <property name="passwordParam" value="password"/>
+        <property name="rememberMeParam" value="rememberMe"/>
+        <property name="loginUrl" value="/login"/>
+    </bean> -->
+
+    <!-- <bean id="sysUserFilter" class="com.github.zhangkaitao.shiro.chapter16.web.shiro.filter.SysUserFilter"/> -->
+
+    <!-- Shiro的Web过滤器 -->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+         <!-- Shiro的核心安全接口,这个属性是必须的 -->  
+        <property name="securityManager" ref="securityManager"/>  
+        <!-- 要求登录时的链接(可根据项目的URL进行替换),非必须的属性,默认会自动寻找Web工程根目录下的"/login.jsp"页面 -->  
+        <property name="loginUrl" value="/admin"/>  
+        <!-- 登录成功后要跳转的连接(本例中此属性用不到,因为登录成功后的处理逻辑在LoginController里硬编码为main.jsp了) -->  
+        <!-- <property name="successUrl" value="/system/main"/> -->  
+        <!-- 用户访问未对其授权的资源时,所显示的连接 -->  
+        <property name="unauthorizedUrl" value="/error/noPermissions"/>  
+        <!-- 基于表单登陆 -->
+        <!-- <property name="filters">
+            <util:map>
+                <entry key="authc" value-ref="formAuthenticationFilter"/>
+                <entry key="sysUser" value-ref="sysUserFilter"/>
+            </util:map>
+        </property> -->
+        <!-- Shiro连接约束配置,即过滤链的定义 -->   
+        <property name="filterChainDefinitions">
+            <value>
+               <!-- 登陆 -->	
+	            	/admin=anon
+	            	/admin/login=anon
+	            	/admin/logout=authc
+				<!-- 经营状况 -->
+	            	/operatingStatus=authc,perms[operatingStatus:manage]
+	            	/operatingStatus/getAllSysUsage=authc,perms[operatingStatus:manage]
+				<!-- 待办事项 -->
+	            	<!--报账审核  -->	
+	                /toDoReimbursement=authc,perms[toDoReimbursement:manage]
+	                	/toDoReimbursement/find=authc,perms["toDoReimbursement:manage","toDoReimbursement:find"]
+	                	/toDoReimbursement/ok=authc,perms["toDoReimbursement:manage","toDoReimbursement:ok"]
+	                	/toDoReimbursement/cancel=authc,perms["toDoReimbursement:manage","toDoReimbursement:cancel"]
+	                	/toDoReimbursement/checkStatus=authc,perms["toDoReimbursement:manage","toDoReimbursement:ok"]
+	                <!--供应商付款审核  -->	
+	                /toDoBill=authc,perms[toDoBill:manage]
+	                	/toDoBill/find=authc,perms["toDoBill:manage","toDoBill:find"]
+	                	/toDoBill/ok=authc,perms["toDoBill:manage","toDoBill:ok"]
+	                	/toDoBill/cancel=authc,perms["toDoBill:manage","toDoBill:cancel"]
+	                	/toDoBill/checkStatus=authc,perms["toDoBill:manage","toDoBill:ok"]
+                <!-- 团队管理 -->
+                	<!-- 地接团队 -->
+                	/localTourManage=authc,perms[localTour:manage]
+                		/localTourManage/getCreateInfo=authc,perms[localTour:manage]
+                		/guideTimeManage/checkTime=authc,perms[localTour:manage]
+                		/localTourManage/find=authc,perms["localTour:manage","localTour:find"]
+                		/localTourManage/save=authc,perms["localTour:manage","localTour:save"]
+                		/localTourManage/update=authc,perms["localTour:manage","localTour:update"]
+                		/guideTimeManage/delete=authc,perms["localTour:manage","localTour:update"]
+                		/localTourManage/del=authc,perms["localTour:manage","localTour:del"]
+                		/localTourManage/recover=authc,perms["localTour:manage","localTour:recover"]
+                		/localTourManage/auditing=authc,perms["localTour:manage","localTour:auditing"]
+                		/localTourManage/unAuditing=authc,perms["localTour:manage","localTour:unAuditing"]
+                		/localTourManage/finance=authc,perms["localTour:manage","localTour:finance"]
+                		/localTourManage/balance=authc,perms["localTour:manage","localTour:balance"]
+                		/localTourManage/findChangeCost=authc,perms["localTour:manage","localTour:findChange"]
+                		/localTourManage/saveChangeCost=authc,perms["localTour:manage","localTour:changeApplication"]
+                		/localTourManage/findLend=authc,perms["localTour:manage","localTour:findLoan"]
+                		/localTourManage/loanApplication=authc,perms["localTour:manage","localTour:loanApplication"]
+                		/localTourManage/loanApplicationAgain=authc,perms["localTour:manage","localTour:loanApplication"]
+                		/localTourManage/findPay=authc,perms["localTour:manage","localTour:findPay"]
+                		/localTourManage/payApplication=authc,perms["localTour:manage","localTour:payApplication"]
+                		/localTourManage/payApplicationAgain=authc,perms["localTour:manage","localTour:payApplication"]
+                		/localTourManage/findBorrowInvoice=authc,perms["localTour:manage","localTour:findBorrowInvoice"]
+                		/localTourManage/saveBorrowInvoice=authc,perms["localTour:manage","localTour:borrowInvoiceApplication"]
+                		/localTourManage/borrowInvoiceAgain=authc,perms["localTour:manage","localTour:borrowInvoiceApplication"]
+                		/reimbursementManage/findReimbursement=authc,perms["localTour:manage","localTour:findReimbursement"]
+                		/reimbursementManage/checkReimbursement=authc,perms["localTour:manage","localTour:findReimbursement"]
+                		/reimbursementManage/updateReimbursement=authc,perms["localTour:manage","localTour:reimbursementApplication"]
+                		<!-- 打印 -->
+                		/localTourManage/printVoucher=authc
+                		/localTourManage/printCountPlus=authc
+                	<!-- 签单管理 -->
+                	/billCheckManage=authc,perms[billCheck:manage]
+                		/billCheckManage/find=authc,perms["billCheck:manage","billCheck:find"]
+                		/billCheckManage/update=authc,perms["billCheck:manage","billCheck:billApplication"]
+                <!-- 导游管理 -->
+                	<!-- 导游排团 -->
+                	/guideTimeManage=authc,perms[guideTime:manage]
+                		/guideTimeManage/initialize=authc,perms[guideTime:manage]
+                		/guideTimeManage/save=authc,perms["guideTime:manage","guideTime:save"]
+                		/guideTimeManage/find=authc,perms["guideTime:manage","guideTime:update"]
+                		/guideTimeManage/update=authc,perms["guideTime:manage","guideTime:update"]
+                	<!-- 导游管理 -->
+                	/guideManage=authc,perms[guide:manage]
+                		/guideManage/save=authc,perms["guide:manage","guide:save"]
+                		/guideManage/del=authc,perms["guide:manage","guide:del"]
+                		/guideManage/recover=authc,perms["guide:manage","guide:recover"]
+                		/guideManage/update=authc,perms["guide:manage","guide:update"]
+                <!-- 结算管理 -->
+                	<!-- 付款管理 -->
+                	/payManage=authc,perms[pay:manage]
+                		/payManage/find=authc,perms["pay:manage","pay:find"]
+                		/payManage/update=authc,perms["pay:manage","pay:update"]
+                		/localTourManage/cancelFinance=authc,perms["pay:manage","pay:unFinance"]
+                	<!-- 收款管理 -->
+                	/revenueManage=authc,perms[revenue:manage]
+                		/revenueManage/find=authc,perms["revenue:manage","revenue:find"]
+                		/revenueManage/update=authc,perms["revenue:manage","revenue:update"]
+                	<!-- 发票管理 -->
+                		/invoiceManage/find=authc,perms["invoice:find"]
+                		/invoiceManage/save=authc,perms["invoice:save"]
+                	<!-- 预借发票管理 -->
+                		/loanInvoiceManage/find=authc,perms["loanInvoice:find"]
+                		/loanInvoiceManage/save=authc,perms["loanInvoice:save"]
+                	<!-- 核销管理 -->
+                	/balanceManage=authc,perms[balance:manage]
+                		/balanceManage/find=authc,perms["balance:manage","balance:find"]
+                		/balanceManage/getCreateInfo=authc,perms["balance:manage","balance:find"]
+                		/balanceManage/update=authc,perms["balance:manage","balance:update"]
+                		/balanceManage/cancel=authc,perms["balance:manage","balance:cancel"]
+                	<!-- 结算管理 -->
+                	/settlementManage=authc,perms[settlement:manage]
+                		/settlementManage/find=authc,perms["settlement:manage","settlement:find"]
+                		/settlementManage/update=authc,perms["settlement:manage","settlement:update"]
+                		/settlementManage/cancel=authc,perms["settlement:manage","settlement:cancel"]
+                		/settlementManage/checkStatus=authc,perms["settlement:manage","settlement:update"]
+                	<!-- 挂账管理 -->
+                	/billManage=authc,perms[bill:manage]
+                		/billManage/find=authc,perms["bill:manage","bill:find"]
+                		/billManage/update=authc,perms["bill:manage","bill:update"]
+                <!-- 客户管理 -->
+                	<!-- 组团社管理 -->
+                	/customerAgencyManage=authc,perms[customerAgency:manage]
+                		/customerAgencyManage/save=authc,perms["customerAgency:manage","customerAgency:save"]
+                		/customerAgencyManage/del=authc,perms["customerAgency:manage","customerAgency:del"]
+                		/customerAgencyManage/recover=authc,perms["customerAgency:manage","customerAgency:recover"]
+                		/customerAgencyManage/update=authc,perms["customerAgency:manage","customerAgency:update"]
+                	<!-- 个人客户管理 -->
+                	/customerManage=authc,perms[customer:manage]
+                <!-- 供应商管理 -->
+                	<!-- 供应商信息管理 -->
+                	/supplierInfoManage=authc,perms[supplierInfo:manage]
+                		/supplierInfoManage/save=authc,perms["supplierInfo:manage","supplierInfo:save"]
+                		/supplierBusiness/save=authc,perms["supplierInfo:manage","supplierInfo:save"]
+                		/supplierInfoManage/del=authc,perms["supplierInfo:manage","supplierInfo:del"]
+                		/supplierInfoManage/recover=authc,perms["supplierInfo:manage","supplierInfo:recover"]
+                		/supplierInfoManage/update=authc,perms["supplierInfo:manage","supplierInfo:update"]
+                		/supplierBusiness/update=authc,perms["supplierInfo:manage","supplierInfo:update"]
+                <!-- 统计分析 -->
+                	/deptGains=authc
+                	/deptGains/get=authc
+                <!-- 数据管理 -->
+                	<!-- 业务类型 -->
+                	/businessTypeManage=authc,perms[businessType:manage]
+                		/businessTypeManage/save=authc,perms["businessType:manage","businessType:save"]
+                		/businessTypeManage/del=authc,perms["businessType:manage","businessType:del"]
+                		/businessTypeManage/recover=authc,perms["businessType:manage","businessType:recover"]
+                		/businessTypeManage/update=authc,perms["businessType:manage","businessType:update"]
+                	<!-- 团队类型 -->
+                	/tourTypeManage=authc,perms[tourType:manage]
+                		/tourTypeManage/save=authc,perms["tourType:manage","tourType:save"]
+                		/tourTypeManage/del=authc,perms["tourType:manage","tourType:del"]
+                		/tourTypeManage/recover=authc,perms["tourType:manage","tourType:recover"]
+                		/tourTypeManage/update=authc,perms["tourType:manage","tourType:update"]
+                	<!-- 游客类型 -->
+                	/visitorTypeManage=authc,perms[visitorType:manage]
+                		/visitorTypeManage/save=authc,perms["visitorType:manage","visitorType:save"]
+                		/visitorTypeManage/del=authc,perms["visitorType:manage","visitorType:del"]
+                		/visitorTypeManage/recover=authc,perms["visitorType:manage","visitorType:recover"]
+                		/visitorTypeManage/update=authc,perms["visitorType:manage","visitorType:update"]
+                	<!-- 国家地区 -->
+                	/regionManage=authc,perms[region:manage]
+                		/regionManage/save=authc,perms["region:manage","region:save"]
+                		/regionManage/del=authc,perms["region:manage","region:del"]
+                		/regionManage/recover=authc,perms["region:manage","region:recover"]
+                		/regionManage/update=authc,perms["region:manage","region:update"]
+                	<!-- 供应范围 -->
+                	/supplierScopeManage=authc,perms[supplier:manage]
+                		/supplierScopeManage/save=authc,perms["supplier:manage","supplier:save"]
+                		/supplierScopeManage/del=authc,perms["supplier:manage","supplier:del"]
+                		/supplierScopeManage/recover=authc,perms["supplier:manage","supplier:recover"]
+                		/supplierScopeManage/update=authc,perms["supplier:manage","supplier:update"]
+                	<!-- 供应内容 -->
+                	/contentManage=authc,perms[content:manage]
+                		/contentManage/save=authc,perms["content:manage","content:save"]
+                		/contentManage/del=authc,perms["content:manage","content:del"]
+                		/contentManage/recover=authc,perms["content:manage","content:recover"]
+                		/contentManage/update=authc,perms["content:manage","content:update"]
+                <!-- 系统管理 -->
+                	<!-- 用户管理 -->
+                	/userManage=authc,perms[user:manage]
+                		/userManage/save=authc,perms["user:manage","user:save"]
+                		/userManage/initRole=authc,perms["user:manage","user:save"]
+                		/deptManage/getTree=authc,perms["user:manage"]
+                		/userManage/del=authc,perms["user:manage","user:del"]
+                		/userManage/recover=authc,perms["user:manage","user:recover"]
+                		/userManage/find=authc,perms["user:manage","user:update"]
+                		/userManage/update=authc,perms["user:manage","user:update"]
+                		/userManage/reset=authc,perms["user:manage","user:reset"]
+                	<!-- 角色管理 -->
+                	/roleManage=authc,perms[role:manage]
+                		/roleManage/save=authc,perms["role:manage","role:save"]
+                		/roleManage/update=authc,perms["role:manage","role:update"]
+                		/permissionSManage/find=authc,perms["role:manage","role:update"]
+                		/permissionSManage/update=authc,perms["role:manage","role:update"]
+                	<!-- 部门管理 -->
+                	/deptManage=authc,perms[dept:manage]
+                		/userManage/getCreateInfo=authc,perms[dept:manage]
+                		/deptManage/search=authc,perms[dept:manage]
+                		/deptManage/save=authc,perms["dept:manage","dept:save"]
+                		/deptManage/getDeptTree=authc,perms["dept:manage","dept:save"]
+                		/deptManage/del=authc,perms["dept:manage","dept:del"]
+                		/deptManage/getUserByDept=authc,perms["dept:manage"]
+                	<!-- 部门结构 -->
+                	/deptStructure=authc,perms[deptStructure:manage]
+                		/deptStructure/getTree=authc,perms[deptStructure:manage]
+                		/deptStructure/getUserTree=authc,perms[deptStructure:manage]
+                		/deptStructure/getUserView=authc,perms[deptStructure:manage]
+                <!-- 移动办公 -->
+                	<!-- 成本变更审核 -->
+                	/mobile/changeCostIncomeApplication=authc,perms[changeCostIncome:manage]
+                		/mobile/changeCostOk=authc,perms["changeCostIncome:manage","changeCost:ok"]
+                		/mobile/cancelCost=authc,perms["changeCostIncome:manage","changeCost:cancel"]
+                		/mobile/changeIcomeOk=authc,perms["changeCostIncome:manage","changeIncome:ok"]
+                		/mobile/cancelIncome=authc,perms["changeCostIncome:manage","changeIncome:cancel"]
+                	<!-- 借款申请审核 -->
+                	/mobile/loanApplication=authc,perms[loanApplication:manage]
+                		/mobile/loanApplicationOk=authc,perms["loanApplication:manage","loanApplication:ok"]
+                		/mobile/loanApplicationAllOk=authc,perms["loanApplication:manage","loanApplication:ok"]
+                		/mobile/loanApplicationCancel=authc,perms["loanApplication:manage","loanApplication:cancel"]
+                	<!-- 付款申请审核 -->
+                	/mobile/payApplication=authc,perms[payApplication:manage]
+                		/mobile/payApplicationOk=authc,perms["payApplication:manage","payApplication:ok"]
+                		/mobile/payApplicationAllOk=authc,perms["payApplication:manage","payApplication:ok"]
+                		/mobile/payApplicationCancel=authc,perms["payApplication:manage","payApplication:cancel"]
+                	<!-- 预借发票 -->
+                	/mobile/loanInvoiceApplication=authc,perms[loanInvoiceApplication:manage]
+                		/mobile/loanInvoiceApplicationOk=authc,perms["loanInvoiceApplication:manage","loanInvoiceApplication:ok"]
+                		/mobile/loanInvoiceApplicationCancel=authc,perms["loanInvoiceApplication:manage","loanInvoiceApplication:cancel"]
+                	<!-- 报账审核 -->
+                	/mobile/reimbursementApplication=authc,perms[reimbursementApplication:manage]
+                		/mobile/reimbursementApplicationOk=authc,perms["reimbursementApplication:manage","reimbursementApplication:ok"]
+                		/mobile/reimbursementApplicationCancel=authc,perms["reimbursementApplication:manage","reimbursementApplication:cancel"]
+                	<!-- 供应商挂账付款审核 -->
+                	/mobile/billApplication=authc,perms[billApplication:manage]
+                		/mobile/billApplicationOk=authc,perms["billApplication:manage","billApplication:ok"]
+                		/mobile/billApplicationCancel=authc,perms["billApplication:manage","billApplication:cancel"]
+                <!-- 其他 -->
+                	<!-- 修改资料-->
+                	/profile=authc
+                	<!-- 个人设置 -->
+                	/settings=authc
+                	<!-- 没有权限 -->
+                	/error/noPermissions=authc
+               	<!-- 自定义验证器 -->
+               	<!-- /** = user,sysUser -->
+            </value>
+        </property>
+    </bean>
+
+    <!-- Shiro生命周期处理器-->
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor"/>
+
+	 <!-- 开启Shiro的注解(如@RequiresRoles,@RequiresPermissions),需借助SpringAOP扫描使用Shiro注解的类,并在必要时进行安全逻辑验证 -->  
+    <!-- 配置以下两个bean即可实现此功能 -->  
+    <!-- Enable Shiro Annotations for Spring-configured beans. Only run after the lifecycleBeanProcessor has run -->  
+    <!-- 由于本例中并未使用Shiro注解,故注释掉这两个bean(个人觉得将权限通过注解的方式硬编码在程序中,查看起来不是很方便,没必要使用) -->  
+    <!--   
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator" depends-on="lifecycleBeanPostProcessor"/>  
+    <bean class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">  
+        <property name="securityManager" ref="securityManager"/>  
+    </bean>  
+     -->  
+</beans>

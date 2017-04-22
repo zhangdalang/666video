@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-reverse-engineering PUBLIC "-//Hibernate/Hibernate Reverse Engineering DTD 3.0//EN" "http://hibernate.sourceforge.net/hibernate-reverse-engineering-3.0.dtd" >
+
+<hibernate-reverse-engineering>
+  <table-filter match-catalog="localtour" match-name="arrTable"/>
+  <table-filter match-catalog="localtour" match-name="billApplicationTable"/>
+  <table-filter match-catalog="localtour" match-name="businessTypeTable"/>
+  <table-filter match-catalog="localtour" match-name="changeCostTable"/>
+  <table-filter match-catalog="localtour" match-name="changeIncomeTable"/>
+  <table-filter match-catalog="localtour" match-name="costTable"/>
+  <table-filter match-catalog="localtour" match-name="customerAgencyTable"/>
+  <table-filter match-catalog="localtour" match-name="departTable"/>
+  <table-filter match-catalog="localtour" match-name="deptTable"/>
+  <table-filter match-catalog="localtour" match-name="guideTable"/>
+  <table-filter match-catalog="localtour" match-name="guideTimeTable"/>
+  <table-filter match-catalog="localtour" match-name="incomeTable"/>
+  <table-filter match-catalog="localtour" match-name="invoiceTable"/>
+  <table-filter match-catalog="localtour" match-name="loanInvoiceTable"/>
+  <table-filter match-catalog="localtour" match-name="loanTable"/>
+  <table-filter match-catalog="localtour" match-name="localTourTable"/>
+  <table-filter match-catalog="localtour" match-name="permissionTable"/>
+  <table-filter match-catalog="localtour" match-name="regionTable"/>
+  <table-filter match-catalog="localtour" match-name="reimbursementApplicationTable"/>
+  <table-filter match-catalog="localtour" match-name="reimbursementCostTable"/>
+  <table-filter match-catalog="localtour" match-name="reimbursementTable"/>
+  <table-filter match-catalog="localtour" match-name="rolePermissionTable"/>
+  <table-filter match-catalog="localtour" match-name="roleTable"/>
+  <table-filter match-catalog="localtour" match-name="supplierBusinessTable"/>
+  <table-filter match-catalog="localtour" match-name="supplierContentTable"/>
+  <table-filter match-catalog="localtour" match-name="supplierScopeTable"/>
+  <table-filter match-catalog="localtour" match-name="supplierTable"/>
+  <table-filter match-catalog="localtour" match-name="sysUsageTable"/>
+  <table-filter match-catalog="localtour" match-name="tourTypeTable"/>
+  <table-filter match-catalog="localtour" match-name="transactionTable"/>
+  <table-filter match-catalog="localtour" match-name="tripTable"/>
+  <table-filter match-catalog="localtour" match-name="userPrevilegeTable"/>
+  <table-filter match-catalog="localtour" match-name="userRoleTable"/>
+  <table-filter match-catalog="localtour" match-name="userTable"/>
+  <table-filter match-catalog="localtour" match-name="visitorTypeTable"/>
+  <table-filter match-catalog="localtour" match-name="tourNoAscriptionTable"/>
+  <table-filter match-catalog="localtour" match-name="wxMessageTable"/>
+</hibernate-reverse-engineering>
